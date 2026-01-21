@@ -55,7 +55,7 @@ class AdminHandler:
         
         while True:
             self._display_admin_options()
-            choice = input("\nEnter choice (1-6): ").strip()
+            choice = input("\nEnter choice (1-7): ").strip()
             
             if choice == '1':
                 self._view_inventory()
@@ -68,10 +68,12 @@ class AdminHandler:
             elif choice == '5':
                 self._add_new_item()
             elif choice == '6':
+                self._cash_out_machine()
+            elif choice == '7':
                 Display.print_info("Exiting admin panel...")
                 break
             else:
-                Display.print_error("Invalid choice. Please enter 1-6.")
+                Display.print_error("Invalid choice. Please enter 1-7.")
     
     def _display_admin_options(self) -> None:
         """Display admin menu options."""
@@ -81,7 +83,8 @@ class AdminHandler:
         print("3. View Transactions")
         print("4. View Statistics")
         print("5. Add New Item")
-        print("6. Exit Admin Panel")
+        print("6. Cash Out Machine")
+        print("7. Exit Admin Panel")
     
     def _view_inventory(self) -> None:
         """Display full inventory details."""
@@ -221,3 +224,26 @@ class AdminHandler:
             
         except ValueError:
             Display.print_error("Invalid input! Please enter valid numbers for price and quantity.")
+    
+    def _cash_out_machine(self) -> None:
+        """
+        Cash out all money from the machine.
+        Collects accumulated revenue and resets the cash reserve.
+        """
+        Display.print_header("CASH OUT MACHINE")
+        
+        current_cash = self._machine.cash_reserve
+        
+        if current_cash <= 0:
+            Display.print_warning("No cash to collect. Machine balance is $0.00")
+            return
+        
+        Display.print_info(f"Current machine cash: ${current_cash:.2f}")
+        confirm = input("\nConfirm cash out? (y/n): ").strip().lower()
+        
+        if confirm == 'y':
+            cashed_out = self._machine.cash_out()
+            Display.print_success(f"Successfully cashed out ${cashed_out:.2f}")
+            Display.print_success("Machine cash reserve reset to $0.00")
+        else:
+            Display.print_info("Cash out operation cancelled.")

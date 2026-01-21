@@ -42,6 +42,7 @@ class VendingMachine:
         self._inventory = inventory
         self._payment = payment_service or CashPaymentService()
         self._transactions = transaction_service or TransactionService()
+        self._cash_reserve = 0.0  # Track accumulated revenue from sales
     
     @property
     def balance(self) -> float:
@@ -57,6 +58,11 @@ class VendingMachine:
     def transactions(self) -> TransactionService:
         """Get the transaction service."""
         return self._transactions
+    
+    @property
+    def cash_reserve(self) -> float:
+        """Get the current cash reserve in the machine."""
+        return self._cash_reserve
     
     def insert_money(self, amount: float) -> float:
         """
@@ -116,6 +122,7 @@ class VendingMachine:
         success, change = self._payment.deduct(drink.price)
         if success:
             self._inventory.decrement_stock(code)
+            self._cash_reserve += drink.price  # Add revenue to cash reserve
             txn = self._transactions.create_success(
                 code, drink.name, drink.price,
                 drink.price + change, change
@@ -144,3 +151,17 @@ class VendingMachine:
     def get_statistics(self) -> Dict:
         """Get transaction statistics."""
         return self._transactions.get_statistics()
+    
+    def cash_out(self) -> float:
+        """
+        Cash out all money from the machine.
+        
+        Returns the total amount cashed out and resets the cash reserve to $0.00.
+        This operation should only be performed by authorized administrators.
+        
+        Returns:
+            The amount of cash withdrawn from the machine
+        """
+        amount = self._cash_reserve
+        self._cash_reserve = 0.0
+        return amount
